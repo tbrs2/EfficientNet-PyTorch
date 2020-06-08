@@ -233,6 +233,8 @@ class EfficientNet(nn.Module):
 
         if conditioning_seq is None:
             conditioning_seq = [None for _ in range(len(self._blocks))]
+        elif len(conditioning_seq) < len(self._blocks):
+            conditioning_seq = conditioning_seq + [None for _ in range(len(self._blocks) - len(conditioning_seq))]
 
         # Stem
         x = self._swish(self._bn0(self._conv_stem(inputs)))
