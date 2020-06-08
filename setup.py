@@ -12,11 +12,11 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'efficientnet_pytorch'
-DESCRIPTION = 'EfficientNet implemented in PyTorch.'
-URL = 'https://github.com/lukemelas/efficientnet_pytorch'
-EMAIL = 'lmelaskyriazi@college.harvard.edu'
-AUTHOR = 'Luke'
+NAME = 'efficientnet_cond_pytorch'
+DESCRIPTION = 'EfficientNet implemented in PyTorch, with the option of conditioning.'
+URL = 'https://github.com/tbrs2/efficientnet_pytorch'
+EMAIL = ''
+AUTHOR = ''
 REQUIRES_PYTHON = '>=3.5.0'
 VERSION = '0.6.4'
 
