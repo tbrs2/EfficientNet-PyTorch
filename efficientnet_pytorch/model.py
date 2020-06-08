@@ -77,7 +77,7 @@ class MBConvBlock(nn.Module):
         self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
         self._swish = MemoryEfficientSwish()
 
-    def forward(self, inputs, drop_connect_rate=None):
+    def forward(self, inputs, drop_connect_rate=None, conditioning=None):
         """MBConvBlock's forward function.
 
         Args:
@@ -109,7 +109,11 @@ class MBConvBlock(nn.Module):
 
         # Pointwise Convolution
         x = self._project_conv(x)
-        x = self._bn2(x)
+
+        if conditioning is None:
+            conditioning = 0
+
+        x = self._bn2(x + conditioning)
 
         # Skip connection and drop connect
         input_filters, output_filters = self._block_args.input_filters, self._block_args.output_filters
@@ -216,7 +220,7 @@ class EfficientNet(nn.Module):
             block.set_swish(memory_efficient)
 
 
-    def extract_features(self, inputs):
+    def extract_features(self, inputs, conditioning_seq=None):
         """use convolution layer to extract feature .
 
         Args:
@@ -226,6 +230,10 @@ class EfficientNet(nn.Module):
             Output of the final convolution 
             layer in the efficientnet model.
         """
+
+        if conditioning_seq is None:
+            conditioning_seq = [None for _ in range(len(self._blocks))]
+
         # Stem
         x = self._swish(self._bn0(self._conv_stem(inputs)))
 
@@ -234,14 +242,14 @@ class EfficientNet(nn.Module):
             drop_connect_rate = self._global_params.drop_connect_rate
             if drop_connect_rate:
                 drop_connect_rate *= float(idx) / len(self._blocks) # scale drop connect_rate
-            x = block(x, drop_connect_rate=drop_connect_rate)
+            x = block(x, drop_connect_rate=drop_connect_rate, conditioning=conditioning_seq[idx])
         
         # Head
         x = self._swish(self._bn1(self._conv_head(x)))
 
         return x
 
-    def forward(self, inputs):
+    def forward(self, inputs, conditioning_seq=None):
         """EfficientNet's forward function.
            Calls extract_features to extract features, applies final linear layer, and returns logits.
 
@@ -254,7 +262,7 @@ class EfficientNet(nn.Module):
         bs = inputs.size(0)
 
         # Convolution layers
-        x = self.extract_features(inputs)
+        x = self.extract_features(inputs, conditioning_seq=conditioning_seq)
 
         # Pooling and final linear layer
         x = self._avg_pooling(x)
