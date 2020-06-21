@@ -111,9 +111,9 @@ class MBConvBlock(nn.Module):
         x = self._project_conv(x)
 
         if conditioning is None:
-            conditioning = 0
-
-        x = self._bn2(x + conditioning)
+            x = self._bn2(x)
+        else:
+            x = self._bn2(x + conditioning)
 
         # Skip connection and drop connect
         input_filters, output_filters = self._block_args.input_filters, self._block_args.output_filters
